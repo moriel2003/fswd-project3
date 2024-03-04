@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Management App</title>
+    <link rel="stylesheet " href="./style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    </head>
+<body>
+    <div class="app-container">
+        <div class="top">
+        <div class="account-balance">$1570</div>
+        <i class="fa-solid fa-user user-icon" onclick="showPopup(1)"></i>
+        </div>
+        <div class="options-container">
+            <div class="option"  onclick="handleLists(0)">
+              <div class="option-text">Monthly Income</div>
+              <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
+              <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
+       
+            </div>
+            <div class="option"  onclick="handleLists(0)">
+              <div class="option-text">Monthly Expenses</div>
+              <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
+              <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
+          
+            </div>
+            <div class="option" onclick="handleLists(0)">
+                <div class="option-text" >Savings</div>
+                <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
+                <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
+            </div>
+            <div class="option" onclick="handleLists(0)">
+              
+                <div class="option-text">Transport Money</div>
+              
+            </div>
+            <div class="option">
+                
+                <div class="option-text">View Your Data</div>
+              
+            </div>
+        </div>
+    </div>
+    <template>
+    <div class="login pop-up" id="login">
+        <div class="top ">
+        <h2>Login</h2>
+        <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('login')"></i>
+    </div>
+        <form action="#" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="signup-link">
+            <p>don't have an account? <a href="#"  onclick="hidePopup('login'); showPopup(1);">Sign up</a></p>
+        </div>
+    </div>
+
+    </template>
+    <template id="signupTemplate">
+        <div class="signup pop-up" id="signup">
+            <div class="top">
+                <h2>Sign up</h2>
+                <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('signup')"></i>
+            </div>
+            <form action="#" method="post">
+                <label for="name">Enter your Name:</label>
+                <input type="text" id="name"  required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                 <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <div class="login-link">
+                <p>alredy have an account? <a href="#"  onclick="hidePopup('signup'); showPopup(0);">Log in</a></p>
+            </div>
+        </div>
+    </template>
+
+    
+    <script src="./script.js"> </script>
+
+</body>
+</html>

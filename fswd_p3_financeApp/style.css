@@ -1,0 +1,121 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+
+}
+
+.app-container {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px; 
+    width: 600px;
+    height: 400px;
+}
+
+.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    margin-top: 20px;
+}
+
+.account-balance {
+    font-size: 40px;
+    font-weight: bold;
+    margin-left: 30px;
+}
+
+.user-icon {
+    font-size: 30px;
+    margin-right: 30px; 
+}
+
+.options-container {
+    text-align: left;
+    margin-top: 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top :50px;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    transition: 0.3s ease;
+    background-color: beige;
+}
+
+.option:hover  {
+    transform: scale(1.02);
+}
+
+
+.arrow{
+    margin-right: 20px;
+}
+
+.pop-up {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+}
+
+.pop-up h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.pop-up form {
+    display: flex;
+    flex-direction: column;
+}
+
+.pop-up label {
+    margin-bottom: 10px;
+}
+
+.pop-up input {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.pop-up button {
+    padding: 10px;
+    background-color: beige;
+    border: none;
+    border-radius: 5px;
+    color:black;
+    transition: 0.3s ease;
+}
+
+.pop-up button:hover {
+   transform: scale(1.15);
+}
+
+.login .top{
+    margin-top: 10px;
+}
+.x-icon{
+    border-radius: 0.5;
+    border: 1px solid;
+}
