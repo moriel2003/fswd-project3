@@ -1,7 +1,7 @@
 // API
 function get(url) {
   if (url.includes("user")) {
-    const userId = extractUserIdFromUrl(url);
+        const userId = extractUserIdFromUrl(url);
     return localStorage.getItem(`user_${userId}`);
   } else if (url.includes("users")) {
     const users = JSON.parse(localStorage.getItem("users")) || [];
@@ -19,7 +19,29 @@ function post(url, data) {
     let userList = JSON.parse(localStorage.getItem("userList"))
     localStorage.setItem(`userList`, JSON.stringify([...userList, {...data, userId}]));
     return `User ${userId} created successfully`;
-  } else {
+  } 
+  if(url.includes("LogIn")){
+    // check if user exists in local storage UserList
+    var userList = JSON.parse(localStorage.getItem("userList"));
+
+    var user = userList.find(function (user) {
+      return user.name == data.name; //&& user.userPassword == userPassword;
+    });
+
+    if (user !== undefined && user.password == data.password) {
+      // add data to local storage ActualUser
+      localStorage.setItem("actualUser", JSON.stringify(user));
+      hidePopup("login");
+    } else if (user !== undefined && user.password !== data.password) {
+      console.log("error");
+      //if user exists but password is incorrect
+      //document.getElementById("error").innerText = "Wrong password.";
+    } else {
+      //user doesnt exit
+      console.log("error");
+    }
+  }
+  else {
     return null;
   }
 }
@@ -175,4 +197,20 @@ function signUp(event) {
   fajax.open("POST", "Adduser");
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.send(userData);
+}
+
+function logIn(event) {
+   event.preventDefault();
+   const name = document.getElementById("username").value;
+   const password = document.getElementById("password").value;
+
+   const userData = {
+     name: name,
+     password: password,
+   };
+
+   const fajax = new FXMLHttpRequest();
+   fajax.open("POST", "LogIn");
+   fajax.setRequestHeader("Content-Type", "application/json");
+   fajax.send(userData);
 }
