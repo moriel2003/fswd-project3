@@ -68,7 +68,7 @@
                 <h2>Sign up</h2>
                 <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('signup')"></i>
             </div>
-            <form action="#" method="post">
+            <form action="#" method="post" onsubmit="signUp(event)">
                 <label for="name">Enter your Name:</label>
                 <input type="text" id="name"  required>
                 <label for="email">Email:</label>
@@ -78,7 +78,7 @@
                 <button type="submit">Sign Up</button>
             </form>
             <div class="login-link">
-                <p>alredy have an account? <a href="#"  onclick="hidePopup('signup'); showPopup(0);">Log in</a></p>
+                <p>already have an account? <a href="#"  onclick="hidePopup('signup'); showPopup(0);">Log in</a></p>
             </div>
         </div>
     </template>
