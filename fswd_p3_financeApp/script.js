@@ -16,8 +16,9 @@ function get(url) {
 function post(url, data) {
   if (url.includes("Adduser")) {
     const userId = generateUserId();
+    const amount = generateAmount();
     let userList = JSON.parse(localStorage.getItem("userList"))
-    localStorage.setItem(`userList`, JSON.stringify([...userList, {...data, userId}]));
+    localStorage.setItem(`userList`, JSON.stringify([...userList, {...data, userId,amount}]));
     return `User ${userId} created successfully`;
   } 
   if(url.includes("LogIn")){
@@ -32,6 +33,8 @@ function post(url, data) {
       // add data to local storage ActualUser
       localStorage.setItem("actualUser", JSON.stringify(user));
       hidePopup("login");
+      return user;
+      // return user;
     } else if (user !== undefined && user.password !== data.password) {
       console.log("error");
       //if user exists but password is incorrect
@@ -75,7 +78,9 @@ function generateUserId() {
   return Math.floor(Math.random() * 1000) + 1;
 }
 
-
+function generateAmount() {
+  return Math.floor(Math.random() * 10000) + 1000;
+}
 
 // FXMLHttpRequest
 class FXMLHttpRequest {
@@ -87,6 +92,7 @@ class FXMLHttpRequest {
     this.responseHeaders = {};
     this.readyState = 0; // 0: request not initialized
     this.status = null;
+    this.onload = null;
     this.responseText = null;
     this.responseType = "";
     this.onreadystatechange = null;
@@ -118,6 +124,7 @@ class FXMLHttpRequest {
       }
       this.status = 200; // Fake status code
       this.changeReadyState(4); // 4: request finished and response is ready
+      this.onload();
     }, 1000);
   }
 
@@ -137,6 +144,10 @@ class FXMLHttpRequest {
     return this.responseHeaders[header];
   }
 
+  getResponseText() {
+    return this.responseText;
+  }
+
   changeReadyState(state) {
     this.readyState = state;
     if (this.onreadystatechange) {
@@ -148,13 +159,23 @@ class FXMLHttpRequest {
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM loaded! 🚀");
   // Check if item exists in local storage, if not initialize them
+  let actualUser = JSON.parse(localStorage.getItem("actualUser"));
   if (localStorage.getItem("userList") === null) {
     localStorage.setItem("userList", JSON.stringify([]));
   }
-  if (localStorage.getItem("actualUser") === null) {
+  if (actualUser === null) {
     localStorage.setItem("actualUser", JSON.stringify({}));
   }
+  if (actualUser?.name === undefined) {
+    showPopup(0);
+  }
+  else{
+    // loadData();
+  }  
 })
+
+
+
 //this function shows a template pop up based on it index
 function showPopup(i) {
   let temp = document.getElementsByTagName("template")[i];
@@ -179,10 +200,8 @@ function handleLists(i) {
     closeIcon.style.display = "none";
   }
 }
-function signUp(event) {
-  console.log(event);
-  event.preventDefault(); 
 
+function signUp() {
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -199,8 +218,7 @@ function signUp(event) {
   fajax.send(userData);
 }
 
-function logIn(event) {
-   event.preventDefault();
+function logIn() {
    const name = document.getElementById("username").value;
    const password = document.getElementById("password").value;
 
@@ -212,5 +230,25 @@ function logIn(event) {
    const fajax = new FXMLHttpRequest();
    fajax.open("POST", "LogIn");
    fajax.setRequestHeader("Content-Type", "application/json");
+   fajax.onload = () => {
+    const user = fajax.getResponseText();
+    const amount = document.getElementById("account-balance");
+    const name = document.getElementById("userName");
+    amount.textContent = "$ " + user.amount;
+    name.textContent = user.name;
+   };
    fajax.send(userData);
+}
+
+function loadData() {
+  // Get object from DOM
+  const amount = document.getElementById("account-balance");
+  const name = document.getElementById("userName");
+
+  // Get data from localstorage
+  const userData = JSON.parse(localStorage.getItem("actualUser"));
+
+  // Update user data
+  amount.textContent = '$ ' + userData.amount;
+  name.textContent = userData.name;
 }

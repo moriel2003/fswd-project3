@@ -10,7 +10,8 @@
 <body>
     <div class="app-container">
         <div class="top">
-        <div class="account-balance">$1570</div>
+        <div class="account-balance" id="account-balance">$0</div>
+        <div class="userName" id="userName"></div>
         <i class="fa-solid fa-user user-icon" onclick="showPopup(1)"></i>
         </div>
         <div class="options-container">
@@ -31,7 +32,7 @@
                 <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
                 <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
             </div>
-            <div class="option" onclick="handleLists(0)">
+            <div class="option" onclick="showPopup(2)">
               
                 <div class="option-text">Transport Money</div>
               
@@ -49,7 +50,7 @@
         <h2>Login</h2>
         <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('login')"></i>
     </div>
-        <form action="javascript:void(0);" onsubmit="logIn(event)">
+        <form action="javascript:void(0);" onsubmit="logIn()">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
             <label for="password">Password:</label>
@@ -80,6 +81,20 @@
             <div class="login-link">
                 <p>already have an account? <a href="#"  onclick="hidePopup('signup'); showPopup(0);">Log in</a></p>
             </div>
+        </div>
+    </template>
+
+     <template id="transferMoneyTemplate">
+        <div class="transfer pop-up" id="transfer">
+            <div class="top">
+                <h2>Transfer</h2>
+                <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('transfer')"></i>
+            </div>
+            <form action="#" method="post" onsubmit="transfer(event)">
+                <label for="name">Enter your Money:</label>
+                <input type="text" id="name"  required>
+                <button type="submit">Transfer</button>
+            </form>
         </div>
     </template>
 
