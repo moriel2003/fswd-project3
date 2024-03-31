@@ -17,8 +17,9 @@ function post(url, data) {
   if (url.includes("Adduser")) {
     const userId = generateUserId();
     const amount = generateAmount();
+    const account = generateAccount();
     let userList = JSON.parse(localStorage.getItem("userList"))
-    localStorage.setItem(`userList`, JSON.stringify([...userList, {...data, userId,amount}]));
+    localStorage.setItem(`userList`, JSON.stringify([...userList, {...data, userId,amount,account}]));
     return `User ${userId} created successfully`;
   } 
   if(url.includes("LogIn")){
@@ -37,11 +38,13 @@ function post(url, data) {
       // return user;
     } else if (user !== undefined && user.password !== data.password) {
       console.log("error");
+      return "Password not correct";
       //if user exists but password is incorrect
       //document.getElementById("error").innerText = "Wrong password.";
     } else {
       //user doesnt exit
       console.log("error");
+      return "User doesn't exist";
     }
   }
   else {
@@ -50,7 +53,7 @@ function post(url, data) {
 }
 
 function put(url, data) {
-  if (url.includes("user")) {
+  if (url.includes("SendMoney")) {
     const userId = extractUserIdFromUrl(url);
     localStorage.setItem(`user_${userId}`, JSON.stringify(data));
     return `User ${userId} updated successfully`;
@@ -81,6 +84,10 @@ function generateUserId() {
 function generateAmount() {
   return Math.floor(Math.random() * 10000) + 1000;
 }
+function generateAccount() {
+  const accountNumber = Math.floor(Math.random() * 10000000000);
+  return accountNumber;
+}
 
 // FXMLHttpRequest
 class FXMLHttpRequest {
@@ -92,7 +99,7 @@ class FXMLHttpRequest {
     this.responseHeaders = {};
     this.readyState = 0; // 0: request not initialized
     this.status = null;
-    this.onload = null;
+    this.onload = (()=>{});
     this.responseText = null;
     this.responseType = "";
     this.onreadystatechange = null;
@@ -202,6 +209,7 @@ function handleLists(i) {
 }
 
 function signUp() {
+  console.log('sign up');
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -215,9 +223,12 @@ function signUp() {
   const fajax = new FXMLHttpRequest();
   fajax.open("POST", "Adduser");
   fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    console.log(fajax.getResponseText());};
+  
   fajax.send(userData);
-}
-
+  
+  }
 function logIn() {
    const name = document.getElementById("username").value;
    const password = document.getElementById("password").value;
@@ -232,13 +243,41 @@ function logIn() {
    fajax.setRequestHeader("Content-Type", "application/json");
    fajax.onload = () => {
     const user = fajax.getResponseText();
-    const amount = document.getElementById("account-balance");
-    const name = document.getElementById("userName");
-    amount.textContent = "$ " + user.amount;
-    name.textContent = user.name;
+    if (typeof(user)!== "string"){
+      console.log("aaa");
+      const amount = document.getElementById("account-balance");
+      const name = document.getElementById("userName");
+      amount.textContent = "$ " + user.amount;
+      name.textContent = user.name;
+
+    }
+    else{
+      console.log(user);
+    }
+    
    };
    fajax.send(userData);
 }
+
+function sendMoney(){
+  console.log("sending money");
+  const accountToSend = document.getElementById("accountToSend").value;
+  const amountToSend = document.getElementById("amountToSend").value;
+  const password = document.getElementById("password").value;
+
+  const userData = {
+    accountToSend: accountToSend,
+    amountToSend: amountToSend,
+    password: password,
+  };
+  const fajax = new FXMLHttpRequest();
+  fajax.open("PUT", "SendMoney");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.send(userData);
+
+}
+
+
 
 function loadData() {
   // Get object from DOM
