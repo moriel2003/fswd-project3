@@ -1,7 +1,7 @@
 // API
 function get(url) {
-  if (url.includes("user")) {
-        const userId = extractUserIdFromUrl(url);
+  if (url.includes("getUserFromId")) {
+    const userId = extractUserIdFromUrl(url);
     return localStorage.getItem(`user_${userId}`);
   } else if (url.includes("users")) {
     const users = JSON.parse(localStorage.getItem("users")) || [];
@@ -19,10 +19,10 @@ function post(url, data) {
     const amount = generateAmount();
     const account = generateAccount();
     let userList = JSON.parse(localStorage.getItem("userList"))
-    localStorage.setItem(`userList`, JSON.stringify([...userList, {...data, userId,amount,account}]));
+    localStorage.setItem(`userList`, JSON.stringify([...userList, { ...data, userId, amount, account }]));
     return `User ${userId} created successfully`;
-  } 
-  if(url.includes("LogIn")){
+  }
+  if (url.includes("LogIn")) {
     // check if user exists in local storage UserList
     var userList = JSON.parse(localStorage.getItem("userList"));
 
@@ -54,12 +54,51 @@ function post(url, data) {
 
 function put(url, data) {
   if (url.includes("SendMoney")) {
-    const userId = extractUserIdFromUrl(url);
-    localStorage.setItem(`user_${userId}`, JSON.stringify(data));
-    return `User ${userId} updated successfully`;
-  } else {
-    return null;
+    var userList = JSON.parse(localStorage.getItem("userList"));
+
+    //Check if password is correct
+    var actualUser = JSON.parse(localStorage.getItem("actualUser"));
+
+    var actualUserPassword = actualUser.password;
+    if (actualUserPassword === data.password) {
+      var actualUserAmount = actualUser.amount;
+      var amountToSend = data.amountToSend;
+      if ((actualUserAmount - amountToSend) < 0) { //check if the user has enough money to do this transaction
+        return "You don't have enough money to do this transaction";
+      }
+      else {
+
+        //find user to send money to
+        var userToSend = userList.find(function (user) {
+          return user.account == data.accountToSend;
+        });
+        //find actual user
+        var actualUserinList = userList.find(function (user) {
+          return user.account == actualUser.account;
+        });
+        if (userToSend) {
+          userToSend.amount = parseInt(userToSend.amount) + parseInt(amountToSend);
+          actualUserinList.amount -= amountToSend;
+         localStorage.setItem("userList", JSON.stringify(userList));
+         localStorage.setItem("actualUser", JSON.stringify(actualUserinList));
+         return actualUserinList;
+        }
+        else {
+          return "The user you want to send money to doesn't exist";
+        }
+
+      }
+    }
+    else {
+      return "Password not correct";
+    }
+
+
+
+
   }
+
+  return null;
 }
 
 function del(url) {
@@ -99,7 +138,7 @@ class FXMLHttpRequest {
     this.responseHeaders = {};
     this.readyState = 0; // 0: request not initialized
     this.status = null;
-    this.onload = (()=>{});
+    this.onload = (() => { });
     this.responseText = null;
     this.responseType = "";
     this.onreadystatechange = null;
@@ -176,9 +215,9 @@ document.addEventListener("DOMContentLoaded", function () {
   if (actualUser?.name === undefined) {
     showPopup(0);
   }
-  else{
+  else {
     // loadData();
-  }  
+  }
 })
 
 
@@ -224,26 +263,27 @@ function signUp() {
   fajax.open("POST", "Adduser");
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
-    console.log(fajax.getResponseText());};
-  
+    console.log(fajax.getResponseText());
+  };
+
   fajax.send(userData);
-  
-  }
+
+}
 function logIn() {
-   const name = document.getElementById("username").value;
-   const password = document.getElementById("password").value;
+  const name = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-   const userData = {
-     name: name,
-     password: password,
-   };
+  const userData = {
+    name: name,
+    password: password,
+  };
 
-   const fajax = new FXMLHttpRequest();
-   fajax.open("POST", "LogIn");
-   fajax.setRequestHeader("Content-Type", "application/json");
-   fajax.onload = () => {
+  const fajax = new FXMLHttpRequest();
+  fajax.open("POST", "LogIn");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
     const user = fajax.getResponseText();
-    if (typeof(user)!== "string"){
+    if (typeof (user) !== "string") {
       console.log("aaa");
       const amount = document.getElementById("account-balance");
       const name = document.getElementById("userName");
@@ -251,15 +291,15 @@ function logIn() {
       name.textContent = user.name;
 
     }
-    else{
+    else {
       console.log(user);
     }
-    
-   };
-   fajax.send(userData);
+
+  };
+  fajax.send(userData);
 }
 
-function sendMoney(){
+function sendMoney() {
   console.log("sending money");
   const accountToSend = document.getElementById("accountToSend").value;
   const amountToSend = document.getElementById("amountToSend").value;
@@ -273,6 +313,21 @@ function sendMoney(){
   const fajax = new FXMLHttpRequest();
   fajax.open("PUT", "SendMoney");
   fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const user = fajax.getResponseText();
+    if (typeof (user) !== "string") {
+      console.log("aaa");
+      const amount = document.getElementById("account-balance");
+      amount.textContent = "$ " + user.amount;
+
+    }
+    else {
+      console.log(user);
+      const error = document.getElementById("error");
+      error.textContent = user;
+    }
+
+  };
   fajax.send(userData);
 
 }
