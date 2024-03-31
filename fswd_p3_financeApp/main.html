@@ -15,13 +15,13 @@
         <i class="fa-solid fa-user user-icon" onclick="showPopup(1)"></i>
         </div>
         <div class="options-container">
-            <div class="option"  onclick="handleLists(0)">
+            <div class="option"  onclick="getMonthlyIncome()">
               <div class="option-text">Monthly Income</div>
               <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
               <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
        
             </div>
-            <div class="option"  onclick="handleLists(0)">
+            <div class="option"  onclick="getMonthlyExpenses()">
               <div class="option-text">Monthly Expenses</div>
               <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
               <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
@@ -90,7 +90,6 @@
                 <h2>Transfer</h2>
                 <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('transfer')"></i>
             </div>
-   
             <form action="javascript:void(0);" onsubmit="sendMoney()">
                 <label for="accountToSend">Account number you want to send to :</label>
                 <input type="number" id="accountToSend"  required>
@@ -101,10 +100,41 @@
                 <p id="error"></p>
                 <button type="submit">Transfer</button>
             </form>
+            
         </div>
     </template>
 
-    
+    <template id="monthlyIncomeTemplate">
+        <div class="income pop-up" id="income">
+            <div class="top">
+                <h2>Income</h2>
+                <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('income')"></i>
+            </div>
+   
+            <table id="myTable">
+                <tr>
+                  <th>Index</th>
+                  <th>Valeur</th>
+                </tr>
+              </table>
+        </div>
+    </template>
+
+    <template id="monthlyExpensesTemplate">
+        <div class="expenses pop-up" id="expenses">
+            <div class="top">
+                <h2>Expenses</h2>
+                <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('expenses')"></i>
+            </div>
+   
+            <table id="myTableExpenses">
+                <tr>
+                  <th>Index</th>
+                  <th>Valeur</th>
+                </tr>
+              </table>
+        </div>
+    </template>
     <script src="./script.js"> </script>
 
 </body>

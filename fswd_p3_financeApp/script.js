@@ -3,10 +3,20 @@ function get(url) {
   if (url.includes("getUserFromId")) {
     const userId = extractUserIdFromUrl(url);
     return localStorage.getItem(`user_${userId}`);
-  } else if (url.includes("users")) {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    return users;
-  } else if (url.includes("bank")) {
+  } else if (url.includes("getMonthlyIncome")) {
+    var actualUser = JSON.parse(localStorage.getItem("actualUser"));
+var monthlyIncome = actualUser.monthlyIncome;
+console.log(monthlyIncome);
+return monthlyIncome;
+    
+  } else if (url.includes("getMonthlyExpenses")) {
+    var actualUser = JSON.parse(localStorage.getItem("actualUser"));
+var monthlyExpenses = actualUser.monthlyExpenses;
+console.log(monthlyExpenses);
+return monthlyExpenses;
+    
+  }
+  else if (url.includes("bank")) {
     return localStorage.getItem("bank_info");
   } else {
     return null;
@@ -18,8 +28,10 @@ function post(url, data) {
     const userId = generateUserId();
     const amount = generateAmount();
     const account = generateAccount();
+    const monthlyIncome = ["+"+amount+" from your bank"];
+    const monthlyExpenses =[];
     let userList = JSON.parse(localStorage.getItem("userList"))
-    localStorage.setItem(`userList`, JSON.stringify([...userList, { ...data, userId, amount, account }]));
+    localStorage.setItem(`userList`, JSON.stringify([...userList, { ...data, userId, amount, account ,monthlyIncome,monthlyExpenses}]));
     return `User ${userId} created successfully`;
   }
   if (url.includes("LogIn")) {
@@ -78,6 +90,10 @@ function put(url, data) {
         });
         if (userToSend) {
           userToSend.amount = parseInt(userToSend.amount) + parseInt(amountToSend);
+          userToSend.monthlyIncome=[...userToSend.monthlyIncome,"+" +data.amountToSend+ " from account number " +actualUserinList.account+" ("+actualUserinList.name+")"];
+          actualUserinList.monthlyExpenses=[...actualUserinList.monthlyExpenses,"-" +data.amountToSend+ " to account number " +userToSend.account+" ("+userToSend.name+")"];
+         
+          console.log(userToSend.monthlyIncome);
           actualUserinList.amount -= amountToSend;
          localStorage.setItem("userList", JSON.stringify(userList));
          localStorage.setItem("actualUser", JSON.stringify(actualUserinList));
@@ -332,7 +348,84 @@ function sendMoney() {
 
 }
 
+function getMonthlyIncome(){
+  showPopup(3);
+  console.log("in getMonthlyIncome");
+  const fajax = new FXMLHttpRequest();
+  fajax.open("GET", "getMonthlyIncome");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof (response) !== "string") {
+      console.log("aaa");
 
+        // Récupérer les éléments depuis le local storage
+var listMonthlyIncome = response;
+
+// Référence de la table
+var tableRef = document.getElementById('myTable');
+
+// Boucler à travers les éléments et les ajouter au tableau
+for (var i = 0; i < listMonthlyIncome.length; i++) {
+    var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
+    var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
+    var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
+    
+    indexCell.innerHTML = i; // Afficher l'index
+    valueCell.innerHTML = listMonthlyIncome[i]; // Afficher la valeur
+}
+    }
+    else {
+      console.log(response);
+      const error = document.getElementById("error");
+      error.textContent = response;
+    }
+
+  };
+  fajax.send();
+
+
+}
+
+function getMonthlyExpenses(){
+  showPopup(4);
+  console.log("in getMonthlyExpenses");
+  const fajax = new FXMLHttpRequest();
+  fajax.open("GET", "getMonthlyExpenses");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof (response) !== "string") {
+      console.log("aaa");
+
+        // Récupérer les éléments depuis le local storage
+var listMonthlyExpenses = response;
+
+// Référence de la table
+var tableRef = document.getElementById('myTableExpenses');
+
+// Boucler à travers les éléments et les ajouter au tableau
+for (var i = 0; i < listMonthlyExpenses.length; i++) {
+    var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
+    var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
+    var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
+    
+    indexCell.innerHTML = i; // Afficher l'index
+    valueCell.innerHTML = listMonthlyExpenses[i]; // Afficher la valeur
+}
+    }
+    else {
+      console.log(response);
+      const error = document.getElementById("error");
+      error.textContent = response;
+    }
+
+  };
+  fajax.send();
+
+
+
+}
 
 function loadData() {
   // Get object from DOM
