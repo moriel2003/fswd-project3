@@ -1,66 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bank Management App</title>
     <link rel="stylesheet " href="./style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    </head>
+</head>
+
 <body>
     <div class="app-container">
         <div class="top">
-        <div class="account-balance" id="account-balance">$0</div>
-        <div class="userName" id="userName"></div>
-        <i class="fa-solid fa-user user-icon" onclick="showPopup(1)"></i>
+            <div class="account-balance" id="account-balance">$0</div>
+            <div class="userName" id="userName"></div>
+            <i class="fa-solid fa-user user-icon" onclick="showPopup(1)"></i> <!--login pop-up-->
         </div>
         <div class="options-container">
-            <div class="option"  onclick="getMonthlyIncome()">
-              <div class="option-text">Monthly Income</div>
-              <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
-              <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
-       
+            <div class="option" onclick="getMonthlyIncome()">
+                <div class="option-text">Monthly Income</div>
+                <i class="fa-solid fa-chevron-down open-icon arrow"></i>
+                <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
+
             </div>
-            <div class="option"  onclick="getMonthlyExpenses()">
-              <div class="option-text">Monthly Expenses</div>
-              <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
-              <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
-          
+            <div class="option" onclick="getMonthlyExpenses()">
+                <div class="option-text">Monthly Expenses</div>
+                <i class="fa-solid fa-chevron-down open-icon arrow"></i>
+                <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
+
             </div>
             <div class="option" onclick="handleLists(0)">
-                <div class="option-text" >Savings</div>
-                <i class="fa-solid fa-chevron-down open-icon arrow" ></i>
+                <div class="option-text">Savings</div>
+                <i class="fa-solid fa-chevron-down open-icon arrow"></i>
                 <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
             </div>
-            <div class="option" onclick="showPopup(2)">
-              
+            <div class="option" onclick="showPopup(2)"> <!--transferMoneyTemplate-->
+
                 <div class="option-text">Send Money</div>
-              
+
             </div>
             <div class="option">
-                
+
                 <div class="option-text">View Your Data</div>
-              
+
+            </div>
+            <div class="option" onclick="delAccount()">
+
+                <div class="option-text">Delete account</div>
+
             </div>
         </div>
     </div>
     <template>
-    <div class="login pop-up" id="login">
-        <div class="top ">
-        <h2>Login</h2>
-        <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('login')"></i>
-    </div>
-        <form action="javascript:void(0);" onsubmit="logIn()">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <button type="submit">Login</button>
-        </form>
-        <div class="signup-link">
-            <p>don't have an account? <a href="#"  onclick="hidePopup('login'); showPopup(1);">Sign up</a></p>
+        <div class="login pop-up" id="login">
+            <div class="top ">
+                <h2>Login</h2>
+                <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('login')"></i>
+            </div>
+            <form action="javascript:void(0);" onsubmit="logIn()">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <p id="errorLogIn" class="errorLogIn"></p>
+                <button type="submit">Login</button>
+            </form>
+            <div class="signup-link">
+                <p>don't have an account? <a href="#" onclick="hidePopup('login'); showPopup(1);">Sign up</a></p>
+            </div>
         </div>
-    </div>
 
     </template>
     <template id="signupTemplate">
@@ -71,20 +79,20 @@
             </div>
             <form action="javascript:void(0);" onsubmit="signUp()">
                 <label for="name">Enter your Name:</label>
-                <input type="text" id="name"  required>
+                <input type="text" id="name" required>
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" required>
-                 <label for="password">Password:</label>
+                <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
                 <button type="submit">Sign Up</button>
             </form>
             <div class="login-link">
-                <p>already have an account? <a href="#"  onclick="hidePopup('signup'); showPopup(0);">Log in</a></p>
+                <p>already have an account? <a href="#" onclick="hidePopup('signup'); showPopup(0);">Log in</a></p>
             </div>
         </div>
     </template>
 
-     <template id="transferMoneyTemplate">
+    <template id="transferMoneyTemplate">
         <div class="transfer pop-up" id="transfer">
             <div class="top">
                 <h2>Transfer</h2>
@@ -92,15 +100,21 @@
             </div>
             <form action="javascript:void(0);" onsubmit="sendMoney()">
                 <label for="accountToSend">Account number you want to send to :</label>
-                <input type="number" id="accountToSend"  required>
+                <!--<input type="number" id="accountToSend" required>-->
+                <select id="accountToSend" name="accountToSend"></select>
+
                 <label for="amountToSend">Amount to send:</label>
-                <input type="number" id="amountToSend"  required>
+                <input type="number" id="amountToSend" required>
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
-                <p id="error"></p>
+
+
+
+
+                <p id="errorTransfer" class="errorTransfer"></p>
                 <button type="submit">Transfer</button>
             </form>
-            
+
         </div>
     </template>
 
@@ -110,13 +124,13 @@
                 <h2>Income</h2>
                 <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('income')"></i>
             </div>
-   
+
             <table id="myTable">
                 <tr>
-                  <th>Index</th>
-                  <th>Valeur</th>
+                    <th>Index</th>
+                    <th>Valeur</th>
                 </tr>
-              </table>
+            </table>
         </div>
     </template>
 
@@ -126,16 +140,17 @@
                 <h2>Expenses</h2>
                 <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('expenses')"></i>
             </div>
-   
+
             <table id="myTableExpenses">
                 <tr>
-                  <th>Index</th>
-                  <th>Valeur</th>
+                    <th>Index</th>
+                    <th>Valeur</th>
                 </tr>
-              </table>
+            </table>
         </div>
     </template>
     <script src="./script.js"> </script>
 
 </body>
+
 </html>

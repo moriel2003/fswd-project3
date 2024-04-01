@@ -16,8 +16,22 @@ console.log(monthlyExpenses);
 return monthlyExpenses;
     
   }
-  else if (url.includes("bank")) {
-    return localStorage.getItem("bank_info");
+  else if (url.includes("getAllAccountNumbers")) {
+    var localStorageData = JSON.parse(localStorage.getItem("userList"));
+    var accountList = localStorageData.map(function (user) {
+      return user.account;
+    });
+    var actualUser = JSON.parse(localStorage.getItem("actualUser"));
+    var actualAccount = actualUser.account;
+    var updatedAccountList = accountList.filter(function (account) {
+      return account !== actualAccount;
+    });
+    if (updatedAccountList != []) {
+      return updatedAccountList;
+    } else {
+      return "There are no users yet";
+    }
+    
   } else {
     return null;
   }
@@ -118,10 +132,18 @@ function put(url, data) {
 }
 
 function del(url) {
-  if (url.includes("user")) {
-    const userId = extractUserIdFromUrl(url);
-    localStorage.removeItem(`user_${userId}`);
-    return `User ${userId} deleted successfully`;
+  if (url.includes("deleteUser")) {
+    var actualUser = JSON.parse(localStorage.getItem("actualUser"));
+    const actualUserId = actualUser.userId;
+    localStorage.setItem("actualUser", JSON.stringify({}));
+
+    var localStorageData = JSON.parse(localStorage.getItem("userList"));
+    var updatedLocalStorageData = localStorageData.filter(function (user) {
+      return user.userId !== actualUserId;
+    });
+    localStorage.setItem("userList", JSON.stringify(updatedLocalStorageData));
+    console.log(updatedLocalStorageData);
+    return `User ${actualUserId} deleted successfully`;
   } else {
     return null;
   }
@@ -230,10 +252,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   if (actualUser?.name === undefined) {
     showPopup(0);
-  }
-  else {
+  } else {
     // loadData();
   }
+  
 })
 
 
@@ -243,6 +265,42 @@ function showPopup(i) {
   let temp = document.getElementsByTagName("template")[i];
   let clon = temp.content.cloneNode(true);
   document.body.appendChild(clon);
+  if(i==2){
+    console.log("hey");
+    // Liste des options pour le select
+    var listOfAccounts = [];
+
+  const fajax = new FXMLHttpRequest();
+  fajax.open("GET", "getAllAccountNumbers");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof response !== "string") {
+      console.log("in request");
+
+      // Récupérer les éléments depuis le local storage
+      //var listOfAccounts = response;
+       listOfAccounts = response;
+       if (listOfAccounts != []) {
+         // Sélection de l'élément select
+         var selectElement = document.getElementById("accountToSend");
+
+         // Ajouter chaque option à l'élément select
+         listOfAccounts.forEach(function (account) {
+           var option = document.createElement("option");
+           option.text = account;
+           selectElement.add(option);
+         });
+       } else {
+         console.log(response);
+       }
+  };}
+  fajax.send();
+
+
+
+   
+  }
 }
 //this function hides a pop up based on its id
 function hidePopup(tohide) {
@@ -309,6 +367,10 @@ function logIn() {
     }
     else {
       console.log(user);
+      const error = document.getElementById("errorLogIn");
+      // Change the color of the element
+      error.style.color = "red";
+      error.textContent = user;
     }
 
   };
@@ -335,11 +397,18 @@ function sendMoney() {
       console.log("aaa");
       const amount = document.getElementById("account-balance");
       amount.textContent = "$ " + user.amount;
+      const error = document.getElementById("errorTransfer");
+
+      // Change the color of the element
+      error.style.color = "green";
+
+      error.textContent = "Successful transaction";
 
     }
     else {
       console.log(user);
-      const error = document.getElementById("error");
+      const error = document.getElementById("errorTransfer");
+ error.style.color = "red";
       error.textContent = user;
     }
 
@@ -349,82 +418,95 @@ function sendMoney() {
 }
 
 function getMonthlyIncome(){
-  showPopup(3);
+  showPopup(3); //monthlyIncomeTemplate
   console.log("in getMonthlyIncome");
   const fajax = new FXMLHttpRequest();
   fajax.open("GET", "getMonthlyIncome");
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
     const response = fajax.getResponseText();
-    if (typeof (response) !== "string") {
+    if (typeof response !== "string") {
       console.log("aaa");
 
-        // Récupérer les éléments depuis le local storage
-var listMonthlyIncome = response;
+      // Récupérer les éléments depuis le local storage
+      var listMonthlyIncome = response;
 
-// Référence de la table
-var tableRef = document.getElementById('myTable');
+      // Référence de la table
+      var tableRef = document.getElementById("myTable");
 
-// Boucler à travers les éléments et les ajouter au tableau
-for (var i = 0; i < listMonthlyIncome.length; i++) {
-    var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
-    var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
-    var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
-    
-    indexCell.innerHTML = i; // Afficher l'index
-    valueCell.innerHTML = listMonthlyIncome[i]; // Afficher la valeur
-}
-    }
-    else {
+      // Boucler à travers les éléments et les ajouter au tableau
+      for (var i = 0; i < listMonthlyIncome.length; i++) {
+        var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
+        var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
+        var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
+
+        indexCell.innerHTML = i; // Afficher l'index
+        valueCell.innerHTML = listMonthlyIncome[i]; // Afficher la valeur
+      }
+    } else {
       console.log(response);
       const error = document.getElementById("error");
       error.textContent = response;
     }
-
   };
   fajax.send();
-
-
 }
 
 function getMonthlyExpenses(){
-  showPopup(4);
+  showPopup(4); //monthlyExpensesTemplate
   console.log("in getMonthlyExpenses");
   const fajax = new FXMLHttpRequest();
   fajax.open("GET", "getMonthlyExpenses");
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
     const response = fajax.getResponseText();
-    if (typeof (response) !== "string") {
+    if (typeof response !== "string") {
       console.log("aaa");
 
-        // Récupérer les éléments depuis le local storage
-var listMonthlyExpenses = response;
+      // Récupérer les éléments depuis le local storage
+      var listMonthlyExpenses = response;
 
-// Référence de la table
-var tableRef = document.getElementById('myTableExpenses');
+      // Référence de la table
+      var tableRef = document.getElementById("myTableExpenses");
 
-// Boucler à travers les éléments et les ajouter au tableau
-for (var i = 0; i < listMonthlyExpenses.length; i++) {
-    var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
-    var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
-    var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
-    
-    indexCell.innerHTML = i; // Afficher l'index
-    valueCell.innerHTML = listMonthlyExpenses[i]; // Afficher la valeur
-}
-    }
-    else {
+      // Boucler à travers les éléments et les ajouter au tableau
+      for (var i = 0; i < listMonthlyExpenses.length; i++) {
+        var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
+        var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
+        var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
+
+        indexCell.innerHTML = i; // Afficher l'index
+        valueCell.innerHTML = listMonthlyExpenses[i]; // Afficher la valeur
+      }
+    } else {
       console.log(response);
       const error = document.getElementById("error");
       error.textContent = response;
     }
-
   };
   fajax.send();
+}
 
+function delAccount(){
+  const fajax = new FXMLHttpRequest();
+  fajax.open("DELETE", "deleteUser");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof response !== "string") {
+      console.log("aaa");
 
-
+      
+    } else { //Succedeed
+      console.log(response);
+      const amount = document.getElementById("account-balance");
+      amount.textContent = "$ 0" ;
+      const name = document.getElementById("userName");
+      name.textContent = " ";
+      showPopup(0);
+    }
+  };
+  fajax.send();
 }
 
 function loadData() {
@@ -439,3 +521,5 @@ function loadData() {
   amount.textContent = '$ ' + userData.amount;
   name.textContent = userData.name;
 }
+
+
