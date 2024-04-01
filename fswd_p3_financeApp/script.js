@@ -1,22 +1,24 @@
 // API
+
+//GET functions: get elements from local storage
 function get(url) {
   if (url.includes("getUserFromId")) {
     const userId = extractUserIdFromUrl(url);
     return localStorage.getItem(`user_${userId}`);
   } else if (url.includes("getMonthlyIncome")) {
+    //get action to display the monthly income of the actual user
     var actualUser = JSON.parse(localStorage.getItem("actualUser"));
-var monthlyIncome = actualUser.monthlyIncome;
-console.log(monthlyIncome);
-return monthlyIncome;
-    
+    var monthlyIncome = actualUser.monthlyIncome;
+    console.log(monthlyIncome);
+    return monthlyIncome;
   } else if (url.includes("getMonthlyExpenses")) {
+    //get action to display the monthly expenses of the actual user
     var actualUser = JSON.parse(localStorage.getItem("actualUser"));
-var monthlyExpenses = actualUser.monthlyExpenses;
-console.log(monthlyExpenses);
-return monthlyExpenses;
-    
-  }
-  else if (url.includes("getAllAccountNumbers")) {
+    var monthlyExpenses = actualUser.monthlyExpenses;
+    console.log(monthlyExpenses);
+    return monthlyExpenses;
+  } else if (url.includes("getAllAccountNumbers")) {
+    //get action to return a list with all account numbers existing
     var localStorageData = JSON.parse(localStorage.getItem("userList"));
     var accountList = localStorageData.map(function (user) {
       return user.account;
@@ -31,29 +33,37 @@ return monthlyExpenses;
     } else {
       return "There are no users yet";
     }
-    
   } else {
     return null;
   }
 }
 
+//Post functions: Write new elements on local storage
 function post(url, data) {
   if (url.includes("Adduser")) {
+    //Post action to add a new user (sign up)
     const userId = generateUserId();
     const amount = generateAmount();
     const account = generateAccount();
-    const monthlyIncome = ["+"+amount+" from your bank"];
-    const monthlyExpenses =[];
-    let userList = JSON.parse(localStorage.getItem("userList"))
-    localStorage.setItem(`userList`, JSON.stringify([...userList, { ...data, userId, amount, account ,monthlyIncome,monthlyExpenses}]));
+    const monthlyIncome = ["+" + amount + " from your bank"];
+    const monthlyExpenses = [];
+    let userList = JSON.parse(localStorage.getItem("userList"));
+    localStorage.setItem(
+      `userList`,
+      JSON.stringify([
+        ...userList,
+        { ...data, userId, amount, account, monthlyIncome, monthlyExpenses },
+      ])
+    );
     return `User ${userId} created successfully`;
   }
   if (url.includes("LogIn")) {
+    //Post action to log in
     // check if user exists in local storage UserList
     var userList = JSON.parse(localStorage.getItem("userList"));
 
     var user = userList.find(function (user) {
-      return user.name == data.name; //&& user.userPassword == userPassword;
+      return user.name == data.name;
     });
 
     if (user !== undefined && user.password == data.password) {
@@ -66,20 +76,20 @@ function post(url, data) {
       console.log("error");
       return "Password not correct";
       //if user exists but password is incorrect
-      //document.getElementById("error").innerText = "Wrong password.";
     } else {
       //user doesnt exit
       console.log("error");
       return "User doesn't exist";
     }
-  }
-  else {
+  } else {
     return null;
   }
 }
 
+//Put functions: Update elements in local storage
 function put(url, data) {
   if (url.includes("SendMoney")) {
+    //Put action to send money, updates two accounts
     var userList = JSON.parse(localStorage.getItem("userList"));
 
     //Check if password is correct
@@ -89,11 +99,10 @@ function put(url, data) {
     if (actualUserPassword === data.password) {
       var actualUserAmount = actualUser.amount;
       var amountToSend = data.amountToSend;
-      if ((actualUserAmount - amountToSend) < 0) { //check if the user has enough money to do this transaction
+      if (actualUserAmount - amountToSend < 0) {
+        //check if the user has enough money to do this transaction
         return "You don't have enough money to do this transaction";
-      }
-      else {
-
+      } else {
         //find user to send money to
         var userToSend = userList.find(function (user) {
           return user.account == data.accountToSend;
@@ -103,36 +112,50 @@ function put(url, data) {
           return user.account == actualUser.account;
         });
         if (userToSend) {
-          userToSend.amount = parseInt(userToSend.amount) + parseInt(amountToSend);
-          userToSend.monthlyIncome=[...userToSend.monthlyIncome,"+" +data.amountToSend+ " from account number " +actualUserinList.account+" ("+actualUserinList.name+")"];
-          actualUserinList.monthlyExpenses=[...actualUserinList.monthlyExpenses,"-" +data.amountToSend+ " to account number " +userToSend.account+" ("+userToSend.name+")"];
-         
+          userToSend.amount =
+            parseInt(userToSend.amount) + parseInt(amountToSend);
+          userToSend.monthlyIncome = [
+            ...userToSend.monthlyIncome,
+            "+" +
+              data.amountToSend +
+              " from account number " +
+              actualUserinList.account +
+              " (" +
+              actualUserinList.name +
+              ")",
+          ];
+          actualUserinList.monthlyExpenses = [
+            ...actualUserinList.monthlyExpenses,
+            "-" +
+              data.amountToSend +
+              " to account number " +
+              userToSend.account +
+              " (" +
+              userToSend.name +
+              ")",
+          ];
+
           console.log(userToSend.monthlyIncome);
           actualUserinList.amount -= amountToSend;
-         localStorage.setItem("userList", JSON.stringify(userList));
-         localStorage.setItem("actualUser", JSON.stringify(actualUserinList));
-         return actualUserinList;
-        }
-        else {
+          localStorage.setItem("userList", JSON.stringify(userList));
+          localStorage.setItem("actualUser", JSON.stringify(actualUserinList));
+          return actualUserinList;
+        } else {
           return "The user you want to send money to doesn't exist";
         }
-
       }
-    }
-    else {
+    } else {
       return "Password not correct";
     }
-
-
-
-
   }
 
   return null;
 }
 
+//Del functions: Delete elements from LS
 function del(url) {
   if (url.includes("deleteUser")) {
+    //Del action to delete actual user
     var actualUser = JSON.parse(localStorage.getItem("actualUser"));
     const actualUserId = actualUser.userId;
     localStorage.setItem("actualUser", JSON.stringify({}));
@@ -154,13 +177,17 @@ function extractUserIdFromUrl(url) {
   return parts.pop();
 }
 
+//Generates random id for new user
 function generateUserId() {
   return Math.floor(Math.random() * 1000) + 1;
 }
 
+//Generates random amount for new user
 function generateAmount() {
   return Math.floor(Math.random() * 10000) + 1000;
 }
+
+//Generates random account number for new user
 function generateAccount() {
   const accountNumber = Math.floor(Math.random() * 10000000000);
   return accountNumber;
@@ -176,7 +203,7 @@ class FXMLHttpRequest {
     this.responseHeaders = {};
     this.readyState = 0; // 0: request not initialized
     this.status = null;
-    this.onload = (() => { });
+    this.onload = () => {};
     this.responseText = null;
     this.responseType = "";
     this.onreadystatechange = null;
@@ -229,6 +256,7 @@ class FXMLHttpRequest {
   }
 
   getResponseText() {
+    //Get the response from the request
     return this.responseText;
   }
 
@@ -255,58 +283,51 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     // loadData();
   }
-  
-})
-
-
+});
 
 //this function shows a template pop up based on it index
 function showPopup(i) {
   let temp = document.getElementsByTagName("template")[i];
   let clon = temp.content.cloneNode(true);
   document.body.appendChild(clon);
-  if(i==2){
+  if (i == 2) {
     console.log("hey");
-    // Liste des options pour le select
+    // List of options for the select element: the user wants to see all the different account numbers to send money to. Generates GETS action (get all elements).
     var listOfAccounts = [];
 
-  const fajax = new FXMLHttpRequest();
-  fajax.open("GET", "getAllAccountNumbers");
-  fajax.setRequestHeader("Content-Type", "application/json");
-  fajax.onload = () => {
-    const response = fajax.getResponseText();
-    if (typeof response !== "string") {
-      console.log("in request");
+    const fajax = new FXMLHttpRequest();
+    fajax.open("GET", "getAllAccountNumbers");
+    fajax.setRequestHeader("Content-Type", "application/json");
+    fajax.onload = () => {
+      const response = fajax.getResponseText();
+      if (typeof response !== "string") {
+        console.log("in request");
+        listOfAccounts = response;
+        if (listOfAccounts != []) {
+          // Select the select element
+          var selectElement = document.getElementById("accountToSend");
 
-      // Récupérer les éléments depuis le local storage
-      //var listOfAccounts = response;
-       listOfAccounts = response;
-       if (listOfAccounts != []) {
-         // Sélection de l'élément select
-         var selectElement = document.getElementById("accountToSend");
-
-         // Ajouter chaque option à l'élément select
-         listOfAccounts.forEach(function (account) {
-           var option = document.createElement("option");
-           option.text = account;
-           selectElement.add(option);
-         });
-       } else {
-         console.log(response);
-       }
-  };}
-  fajax.send();
-
-
-
-   
+          // Add each option to select element
+          listOfAccounts.forEach(function (account) {
+            var option = document.createElement("option");
+            option.text = account;
+            selectElement.add(option);
+          });
+        } else {
+          console.log(response);
+        }
+      }
+    };
+    fajax.send();
   }
 }
+
 //this function hides a pop up based on its id
 function hidePopup(tohide) {
   const popup = document.getElementById(tohide);
   popup.remove();
 }
+
 function handleLists(i) {
   const openIcon = document.querySelector(".open-icon");
   const closeIcon = document.querySelector(".close-icon");
@@ -321,8 +342,8 @@ function handleLists(i) {
   }
 }
 
+//this function is called when a new user wants to sign up. Generates POST action.
 function signUp() {
-  console.log('sign up');
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -337,12 +358,17 @@ function signUp() {
   fajax.open("POST", "Adduser");
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
-    console.log(fajax.getResponseText());
+    response = fajax.getResponseText();
+    const success = document.getElementById("successfulSignUp");
+    // Change the color of the element
+    success.style.color = "green";
+    success.textContent = response;
   };
 
   fajax.send(userData);
-
 }
+
+//this function is called when a new user wants to log in. Generates POST action.
 function logIn() {
   const name = document.getElementById("username").value;
   const password = document.getElementById("password").value;
@@ -357,26 +383,24 @@ function logIn() {
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
     const user = fajax.getResponseText();
-    if (typeof (user) !== "string") {
-      console.log("aaa");
+    if (typeof user !== "string") {
+      //Succeded request
       const amount = document.getElementById("account-balance");
       const name = document.getElementById("userName");
       amount.textContent = "$ " + user.amount;
       name.textContent = user.name;
-
-    }
-    else {
-      console.log(user);
+    } else {
+      //An error occured
       const error = document.getElementById("errorLogIn");
       // Change the color of the element
       error.style.color = "red";
       error.textContent = user;
     }
-
   };
   fajax.send(userData);
 }
 
+//this function is called when the actual user wants to send money to another account number. Generates PUT action.
 function sendMoney() {
   console.log("sending money");
   const accountToSend = document.getElementById("accountToSend").value;
@@ -393,31 +417,26 @@ function sendMoney() {
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
     const user = fajax.getResponseText();
-    if (typeof (user) !== "string") {
-      console.log("aaa");
+    if (typeof user !== "string") {
+      //Succeded request
       const amount = document.getElementById("account-balance");
       amount.textContent = "$ " + user.amount;
       const error = document.getElementById("errorTransfer");
-
       // Change the color of the element
       error.style.color = "green";
-
       error.textContent = "Successful transaction";
-
-    }
-    else {
-      console.log(user);
+    } else {
+      //An error occured
       const error = document.getElementById("errorTransfer");
- error.style.color = "red";
+      error.style.color = "red";
       error.textContent = user;
     }
-
   };
   fajax.send(userData);
-
 }
 
-function getMonthlyIncome(){
+//this function is called when the actual user wants to see its monthly income. Generates GET action.
+function getMonthlyIncome() {
   showPopup(3); //monthlyIncomeTemplate
   console.log("in getMonthlyIncome");
   const fajax = new FXMLHttpRequest();
@@ -426,25 +445,22 @@ function getMonthlyIncome(){
   fajax.onload = () => {
     const response = fajax.getResponseText();
     if (typeof response !== "string") {
-      console.log("aaa");
-
-      // Récupérer les éléments depuis le local storage
+      //Successful
+      //Get elements from local storage via fajax
       var listMonthlyIncome = response;
-
-      // Référence de la table
       var tableRef = document.getElementById("myTable");
 
-      // Boucler à travers les éléments et les ajouter au tableau
+      // Loop over elements
       for (var i = 0; i < listMonthlyIncome.length; i++) {
-        var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
-        var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
-        var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
+        var newRow = tableRef.insertRow(-1); // Insert new lign
+        var indexCell = newRow.insertCell(0); // Insert new cell for index
+        var valueCell = newRow.insertCell(1); // Insert new cell for value
 
-        indexCell.innerHTML = i; // Afficher l'index
-        valueCell.innerHTML = listMonthlyIncome[i]; // Afficher la valeur
+        indexCell.innerHTML = i; // Display index
+        valueCell.innerHTML = listMonthlyIncome[i]; // Display value
       }
     } else {
-      console.log(response);
+      //ERROR occured
       const error = document.getElementById("error");
       error.textContent = response;
     }
@@ -452,7 +468,8 @@ function getMonthlyIncome(){
   fajax.send();
 }
 
-function getMonthlyExpenses(){
+//this function is called when the actual user wants to see its monthly expenses. Generates GET action.
+function getMonthlyExpenses() {
   showPopup(4); //monthlyExpensesTemplate
   console.log("in getMonthlyExpenses");
   const fajax = new FXMLHttpRequest();
@@ -461,24 +478,23 @@ function getMonthlyExpenses(){
   fajax.onload = () => {
     const response = fajax.getResponseText();
     if (typeof response !== "string") {
-      console.log("aaa");
+      //Successful
 
-      // Récupérer les éléments depuis le local storage
+      //Get elements from local storage via fajax
       var listMonthlyExpenses = response;
-
-      // Référence de la table
       var tableRef = document.getElementById("myTableExpenses");
 
-      // Boucler à travers les éléments et les ajouter au tableau
+      // Loop over elements
       for (var i = 0; i < listMonthlyExpenses.length; i++) {
-        var newRow = tableRef.insertRow(-1); // Insérer une nouvelle ligne à la fin du tableau
-        var indexCell = newRow.insertCell(0); // Insérer une cellule pour l'index
-        var valueCell = newRow.insertCell(1); // Insérer une cellule pour la valeur
+        var newRow = tableRef.insertRow(-1); // Insert new lign
+        var indexCell = newRow.insertCell(0); // Insert new cell for index
+        var valueCell = newRow.insertCell(1); // Insert new cell for value
 
-        indexCell.innerHTML = i; // Afficher l'index
-        valueCell.innerHTML = listMonthlyExpenses[i]; // Afficher la valeur
+        indexCell.innerHTML = i; //Display index
+        valueCell.innerHTML = listMonthlyExpenses[i]; // Display value
       }
     } else {
+      //ERROR occured
       console.log(response);
       const error = document.getElementById("error");
       error.textContent = response;
@@ -487,20 +503,19 @@ function getMonthlyExpenses(){
   fajax.send();
 }
 
-function delAccount(){
+//this function is called when the actual user wants to delete its account. Generates DELETE action.
+function delAccount() {
   const fajax = new FXMLHttpRequest();
   fajax.open("DELETE", "deleteUser");
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
     const response = fajax.getResponseText();
-    if (typeof response !== "string") {
-      console.log("aaa");
-
-      
-    } else { //Succedeed
-      console.log(response);
+    if (typeof response !== "string") { //An error occured
+      console.log("Error");
+    } else {
+      //Succedeed
       const amount = document.getElementById("account-balance");
-      amount.textContent = "$ 0" ;
+      amount.textContent = "$ 0";
       const name = document.getElementById("userName");
       name.textContent = " ";
       showPopup(0);
@@ -518,8 +533,6 @@ function loadData() {
   const userData = JSON.parse(localStorage.getItem("actualUser"));
 
   // Update user data
-  amount.textContent = '$ ' + userData.amount;
+  amount.textContent = "$ " + userData.amount;
   name.textContent = userData.name;
 }
-
-
