@@ -14,13 +14,11 @@ function get(url) {
     //get action to display the monthly income of the actual user
     var actualUser = JSON.parse(localStorage.getItem("actualUser"));
     var monthlyIncome = actualUser.monthlyIncome;
-    console.log(monthlyIncome);
     return monthlyIncome;
   } else if (url.includes("getMonthlyExpenses")) {
     //get action to display the monthly expenses of the actual user
     var actualUser = JSON.parse(localStorage.getItem("actualUser"));
     var monthlyExpenses = actualUser.monthlyExpenses;
-    console.log(monthlyExpenses);
     return monthlyExpenses;
   } else if (url.includes("getAllAccountNumbers")) {
     //get action to return a list with all account numbers existing
@@ -45,6 +43,21 @@ function get(url) {
 
 //Post functions: Write new elements on local storage
 function post(url, data) {
+  if (url.includes("Initialize")) {
+    let actualUser = JSON.parse(localStorage.getItem("actualUser"));
+    if (localStorage.getItem("userList") === null) {
+      localStorage.setItem("userList", JSON.stringify([]));
+    }
+    if (actualUser === null) {
+      localStorage.setItem("actualUser", JSON.stringify({}));
+    }
+
+    if (actualUser?.name === undefined) {
+      return "Initialized the Database";
+    } else {
+      return actualUser;
+    }
+  }
   if (url.includes("Adduser")) {
     //Post action to add a new user (sign up)
     const userId = generateUserId();
@@ -89,12 +102,10 @@ function post(url, data) {
       return user;
       // return user;
     } else if (user !== undefined && user.password !== data.password) {
-      console.log("error");
       return "Password not correct";
       //if user exists but password is incorrect
     } else {
       //user doesnt exit
-      console.log("error");
       return "User doesn't exist";
     }
   } else {
@@ -152,10 +163,10 @@ function put(url, data) {
               userToSend.name +
               ")",
           ];
-          actualUserinList.monthlyExpensesSum =parseInt(actualUserinList.monthlyExpensesSum) +parseInt(data.amountToSend);
+          actualUserinList.monthlyExpensesSum =
+            parseInt(actualUserinList.monthlyExpensesSum) +
+            parseInt(data.amountToSend);
 
-          console.log(userToSend.monthlyIncomeSum);
-          console.log(actualUserinList.monthlyExpensesSum);
           actualUserinList.amount -= amountToSend;
           localStorage.setItem("userList", JSON.stringify(userList));
           localStorage.setItem("actualUser", JSON.stringify(actualUserinList));
@@ -185,7 +196,6 @@ function del(url) {
       return user.userId !== actualUserId;
     });
     localStorage.setItem("userList", JSON.stringify(updatedLocalStorageData));
-    console.log(updatedLocalStorageData);
     return `User ${actualUserId} deleted successfully`;
   } else {
     return null;
@@ -291,18 +301,23 @@ class FXMLHttpRequest {
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM loaded! 🚀");
   // Check if item exists in local storage, if not initialize them
-  let actualUser = JSON.parse(localStorage.getItem("actualUser"));
-  if (localStorage.getItem("userList") === null) {
-    localStorage.setItem("userList", JSON.stringify([]));
-  }
-  if (actualUser === null) {
-    localStorage.setItem("actualUser", JSON.stringify({}));
-  }
-  if (actualUser?.name === undefined) {
-    showPopup(0);
-  } else {
-    // loadData();
-  }
+  const fajax = new FXMLHttpRequest();
+  fajax.open("POST", "Initialize");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof response === "string") {
+      showPopup(0);
+    } else {
+      const amount = document.getElementById("account-balance");
+      const name = document.getElementById("userName");
+
+      // Update user data
+      amount.textContent = "$ " + response.amount;
+      name.textContent = response.name;
+    }
+  };
+  fajax.send();
 });
 
 //this function shows a template pop up based on it index
@@ -310,83 +325,73 @@ function showPopup(i) {
   let temp = document.getElementsByTagName("template")[i];
   let clon = temp.content.cloneNode(true);
   document.body.appendChild(clon);
-  //Transfer money
-  if (i == 2) {
-    console.log("hey");
-    // List of options for the select element: the user wants to see all the different account numbers to send money to. Generates GETS action (get all elements).
-    var listOfAccounts = [];
+}
 
-    const fajax = new FXMLHttpRequest();
-    fajax.open("GET", "getAllAccountNumbers");
-    fajax.setRequestHeader("Content-Type", "application/json");
-    fajax.onload = () => {
-      const response = fajax.getResponseText();
-      if (typeof response !== "string") {
-        console.log("in request");
-        listOfAccounts = response;
-        if (listOfAccounts != []) {
-          // Select the select element
-          var selectElement = document.getElementById("accountToSend");
+function displayData() {
+  showPopup(5);
+  const fajax = new FXMLHttpRequest();
+  fajax.open("GET", "getMonthlyIncomeAndExpensesSum");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof response !== "string") {
+      // Data
+      let incomeData = response[0]; // Income amount
+      let expensesData = response[1]; // Expenses amount
 
-          // Add each option to select element
-          listOfAccounts.forEach(function (account) {
-            var option = document.createElement("option");
-            option.text = account;
-            selectElement.add(option);
-          });
-        } else {
-          console.log(response);
-        }
+      // HTML elements of the bars
+      var incomeBar = document.getElementById("incomeBar");
+      var expensesBar = document.getElementById("expensesBar");
+
+      // Create and append text for income and expenses amounts on the bars
+      var incomeText = document.createElement("span");
+      incomeText.textContent = "+" + incomeData; // Add "+" sign for income
+      incomeBar.appendChild(incomeText);
+
+      var expensesText = document.createElement("span");
+      expensesText.textContent = "-" + expensesData; // Add "-" sign for expenses
+      expensesBar.appendChild(expensesText);
+
+      // Calculate bar heights in percentage relative to total amount
+      var total = incomeData + expensesData;
+      var incomeHeight = (incomeData / total) * 100;
+      var expensesHeight = (expensesData / total) * 100;
+
+      // Apply calculated heights to the bars
+      incomeBar.style.height = incomeHeight + "%";
+      expensesBar.style.height = expensesHeight + "%";
+    }
+  };
+
+  fajax.send();
+}
+
+function transferMoney() {
+  showPopup(2);
+  // List of options for the select element: the user wants to see all the different account numbers to send money to. Generates GETS action (get all elements).
+  var listOfAccounts = [];
+
+  const fajax = new FXMLHttpRequest();
+  fajax.open("GET", "getAllAccountNumbers");
+  fajax.setRequestHeader("Content-Type", "application/json");
+  fajax.onload = () => {
+    const response = fajax.getResponseText();
+    if (typeof response !== "string") {
+      listOfAccounts = response;
+      if (listOfAccounts != []) {
+        // Select the select element
+        var selectElement = document.getElementById("accountToSend");
+
+        // Add each option to select element
+        listOfAccounts.forEach(function (account) {
+          var option = document.createElement("option");
+          option.text = account;
+          selectElement.add(option);
+        });
       }
-    };
-    fajax.send();
-  }
-
-  //Display data
-  if (i == 5) {
-    var income = 0;
-    var expenses = 0;
-      const fajax = new FXMLHttpRequest();
-      fajax.open("GET", "getMonthlyIncomeAndExpensesSum");
-      fajax.setRequestHeader("Content-Type", "application/json");
-      fajax.onload = () => {
-
-        const response = fajax.getResponseText();
-        console.log("response "+response);
-        if (typeof response !== "string") {
-          // Data
-           incomeData = response[0]; // Income amount
-           expensesData = response[1]; // Expenses amount
-
-          // HTML elements of the bars
-          var incomeBar = document.getElementById("incomeBar");
-          var expensesBar = document.getElementById("expensesBar");
-
-          // Create and append text for income and expenses amounts on the bars
-          var incomeText = document.createElement("span");
-          incomeText.textContent = "+" + incomeData; // Add "+" sign for income
-          incomeBar.appendChild(incomeText);
-
-          var expensesText = document.createElement("span");
-          expensesText.textContent = "-" + expensesData; // Add "-" sign for expenses
-          expensesBar.appendChild(expensesText);
-
-          // Calculate bar heights in percentage relative to total amount
-          var total = incomeData + expensesData;
-          var incomeHeight = (incomeData / total) * 100;
-          var expensesHeight = (expensesData / total) * 100;
-
-          // Apply calculated heights to the bars
-          incomeBar.style.height = incomeHeight + "%";
-          expensesBar.style.height = expensesHeight + "%";
-        }
-         
-          
-        };
-    
-      fajax.send();
- 
-  }
+    }
+  };
+  fajax.send();
 }
 
 //this function hides a pop up based on its id
@@ -469,7 +474,6 @@ function logIn() {
 
 //this function is called when the actual user wants to send money to another account number. Generates PUT action.
 function sendMoney() {
-  console.log("sending money");
   const accountToSend = document.getElementById("accountToSend").value;
   const amountToSend = document.getElementById("amountToSend").value;
   const password = document.getElementById("password").value;
@@ -505,7 +509,6 @@ function sendMoney() {
 //this function is called when the actual user wants to see its monthly income. Generates GET action.
 function getMonthlyIncome() {
   showPopup(3); //monthlyIncomeTemplate
-  console.log("in getMonthlyIncome");
   const fajax = new FXMLHttpRequest();
   fajax.open("GET", "getMonthlyIncome");
   fajax.setRequestHeader("Content-Type", "application/json");
@@ -538,7 +541,6 @@ function getMonthlyIncome() {
 //this function is called when the actual user wants to see its monthly expenses. Generates GET action.
 function getMonthlyExpenses() {
   showPopup(4); //monthlyExpensesTemplate
-  console.log("in getMonthlyExpenses");
   const fajax = new FXMLHttpRequest();
   fajax.open("GET", "getMonthlyExpenses");
   fajax.setRequestHeader("Content-Type", "application/json");
@@ -562,7 +564,6 @@ function getMonthlyExpenses() {
       }
     } else {
       //ERROR occured
-      console.log(response);
       const error = document.getElementById("error");
       error.textContent = response;
     }
@@ -590,17 +591,4 @@ function delAccount() {
     }
   };
   fajax.send();
-}
-
-function loadData() {
-  // Get object from DOM
-  const amount = document.getElementById("account-balance");
-  const name = document.getElementById("userName");
-
-  // Get data from localstorage
-  const userData = JSON.parse(localStorage.getItem("actualUser"));
-
-  // Update user data
-  amount.textContent = "$ " + userData.amount;
-  name.textContent = userData.name;
 }

@@ -14,7 +14,7 @@
         <div class="top">
             <div class="account-balance" id="account-balance">$0</div>
             <div class="userName" id="userName"></div>
-            <i class="fa-solid fa-user user-icon" onclick="showPopup(1)"></i> <!--login pop-up-->
+            <i class="fa-solid fa-user user-icon" onclick="showPopup(0)"></i> <!--login pop-up-->
         </div>
         <div class="options-container">
             <div class="option" onclick="getMonthlyIncome()">
@@ -34,12 +34,12 @@
                 <i class="fa-solid fa-chevron-down open-icon arrow"></i>
                 <i class="fa-solid fa-chevron-up close-icon arrow" style="display: none;"></i>
             </div>
-            <div class="option" onclick="showPopup(2)"> <!--transferMoneyTemplate-->
+            <div class="option" onclick="transferMoney()"> <!--transferMoneyTemplate-->
 
                 <div class="option-text">Send Money</div>
 
             </div>
-            <div class="option" onclick="showPopup(5)"> <!--displayDataTemplate-->
+            <div class="option" onclick="displayData()"> <!--displayDataTemplate-->
 
                 <div class="option-text">View Your Data</div>
 
