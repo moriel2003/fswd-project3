@@ -5,6 +5,11 @@ function get(url) {
   if (url.includes("getUserFromId")) {
     const userId = extractUserIdFromUrl(url);
     return localStorage.getItem(`user_${userId}`);
+  } else if (url.includes("getMonthlyIncomeAndExpensesSum")) {
+    var actualUser = JSON.parse(localStorage.getItem("actualUser"));
+    var actualMonthlyIncomeSum = actualUser.monthlyIncomeSum;
+    var actualMonthlyExpensesSum = actualUser.monthlyExpensesSum;
+    return [actualMonthlyIncomeSum, actualMonthlyExpensesSum];
   } else if (url.includes("getMonthlyIncome")) {
     //get action to display the monthly income of the actual user
     var actualUser = JSON.parse(localStorage.getItem("actualUser"));
@@ -47,12 +52,23 @@ function post(url, data) {
     const account = generateAccount();
     const monthlyIncome = ["+" + amount + " from your bank"];
     const monthlyExpenses = [];
+    const monthlyIncomeSum = amount;
+    const monthlyExpensesSum = 0;
     let userList = JSON.parse(localStorage.getItem("userList"));
     localStorage.setItem(
       `userList`,
       JSON.stringify([
         ...userList,
-        { ...data, userId, amount, account, monthlyIncome, monthlyExpenses },
+        {
+          ...data,
+          userId,
+          amount,
+          account,
+          monthlyIncome,
+          monthlyExpenses,
+          monthlyIncomeSum,
+          monthlyExpensesSum,
+        },
       ])
     );
     return `User ${userId} created successfully`;
@@ -124,6 +140,8 @@ function put(url, data) {
               actualUserinList.name +
               ")",
           ];
+          userToSend.monthlyIncomeSum =
+            parseInt(userToSend.monthlyIncomeSum) + parseInt(data.amountToSend);
           actualUserinList.monthlyExpenses = [
             ...actualUserinList.monthlyExpenses,
             "-" +
@@ -134,8 +152,10 @@ function put(url, data) {
               userToSend.name +
               ")",
           ];
+          actualUserinList.monthlyExpensesSum =parseInt(actualUserinList.monthlyExpensesSum) +parseInt(data.amountToSend);
 
-          console.log(userToSend.monthlyIncome);
+          console.log(userToSend.monthlyIncomeSum);
+          console.log(actualUserinList.monthlyExpensesSum);
           actualUserinList.amount -= amountToSend;
           localStorage.setItem("userList", JSON.stringify(userList));
           localStorage.setItem("actualUser", JSON.stringify(actualUserinList));
@@ -290,6 +310,7 @@ function showPopup(i) {
   let temp = document.getElementsByTagName("template")[i];
   let clon = temp.content.cloneNode(true);
   document.body.appendChild(clon);
+  //Transfer money
   if (i == 2) {
     console.log("hey");
     // List of options for the select element: the user wants to see all the different account numbers to send money to. Generates GETS action (get all elements).
@@ -319,6 +340,52 @@ function showPopup(i) {
       }
     };
     fajax.send();
+  }
+
+  //Display data
+  if (i == 5) {
+    var income = 0;
+    var expenses = 0;
+      const fajax = new FXMLHttpRequest();
+      fajax.open("GET", "getMonthlyIncomeAndExpensesSum");
+      fajax.setRequestHeader("Content-Type", "application/json");
+      fajax.onload = () => {
+
+        const response = fajax.getResponseText();
+        console.log("response "+response);
+        if (typeof response !== "string") {
+          // Data
+           incomeData = response[0]; // Income amount
+           expensesData = response[1]; // Expenses amount
+
+          // HTML elements of the bars
+          var incomeBar = document.getElementById("incomeBar");
+          var expensesBar = document.getElementById("expensesBar");
+
+          // Create and append text for income and expenses amounts on the bars
+          var incomeText = document.createElement("span");
+          incomeText.textContent = "+" + incomeData; // Add "+" sign for income
+          incomeBar.appendChild(incomeText);
+
+          var expensesText = document.createElement("span");
+          expensesText.textContent = "-" + expensesData; // Add "-" sign for expenses
+          expensesBar.appendChild(expensesText);
+
+          // Calculate bar heights in percentage relative to total amount
+          var total = incomeData + expensesData;
+          var incomeHeight = (incomeData / total) * 100;
+          var expensesHeight = (expensesData / total) * 100;
+
+          // Apply calculated heights to the bars
+          incomeBar.style.height = incomeHeight + "%";
+          expensesBar.style.height = expensesHeight + "%";
+        }
+         
+          
+        };
+    
+      fajax.send();
+ 
   }
 }
 
@@ -510,7 +577,8 @@ function delAccount() {
   fajax.setRequestHeader("Content-Type", "application/json");
   fajax.onload = () => {
     const response = fajax.getResponseText();
-    if (typeof response !== "string") { //An error occured
+    if (typeof response !== "string") {
+      //An error occured
       console.log("Error");
     } else {
       //Succedeed

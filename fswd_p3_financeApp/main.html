@@ -39,7 +39,7 @@
                 <div class="option-text">Send Money</div>
 
             </div>
-            <div class="option">
+            <div class="option" onclick="showPopup(5)"> <!--displayDataTemplate-->
 
                 <div class="option-text">View Your Data</div>
 
@@ -148,6 +148,26 @@
                     <th>Valeur</th>
                 </tr>
             </table>
+        </div>
+    </template>
+
+    <template id="displayDataTemplate">
+        <div class="displayData pop-up" id="displayData">
+            <div class="top">
+                <h2>Monthly Summary</h2>
+                <i class="fa-solid fa-xmark x-icon" onclick="hidePopup('displayData')"></i>
+            </div>
+
+            <div class="chart">
+                <div class="bar-wrapper">
+                    <div class="bar income" id="incomeBar"></div>
+                    <div class="label">Income</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar expenses" id="expensesBar"></div>
+                    <div class="label">Expenses</div>
+                </div>
+            </div>
         </div>
     </template>
     <script src="./script.js"> </script>

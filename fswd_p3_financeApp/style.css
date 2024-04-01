@@ -133,3 +133,35 @@ th {
     background-color: #f2f2f2;
 }
 
+.chart {
+  width: 400px;
+  height: 300px;
+  border: 1px solid #ccc;
+  margin: 20px auto;
+  display: flex;
+}
+
+.bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column-reverse; 
+  align-items: center;
+}
+
+.bar {
+  width: 50%;
+  margin-top: 10px; 
+  transition: height 0.5s ease;
+}
+
+#incomeBar{
+  background-color: green;
+}
+
+#expensesBar {
+  background-color: red;
+}
+
+.label {
+  font-size: 14px;
+}
